@@ -1,6 +1,6 @@
 # Termiter
 
-Termiter is a make-like program for building tasks execution
+A make-like tool for software building using TOML files
 
 ## A Termiter file
 
