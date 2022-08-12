@@ -28,18 +28,23 @@ type Command struct {
 }
 
 type TermiterFile struct {
-	Commands map[string]Command `toml:"cmd"`
-	Actions  map[string]Action  `toml:"act"`
-	Profiles map[string]Profile `toml:"prf"`
+	Commands map[string]*Command `toml:"cmd"`
+	Actions  map[string]*Action  `toml:"act"`
+	Profiles map[string]*Profile `toml:"prf"`
 }
 
-func ReadTermiterFile(source io.Reader) (file TermiterFile, err error) {
+func ReadTermiterFile(source io.Reader) (file *TermiterFile, err error) {
 	decoder := toml.NewDecoder(source)
-	_, err = decoder.Decode(&file)
+	file = &TermiterFile{}
+	var meta toml.MetaData
+	meta, err = decoder.Decode(file)
+	if err == nil && len(meta.Undecoded()) > 0 {
+		err = fmt.Errorf("Unexpected field: %s", meta.Undecoded()[0].String())
+	}
 	return
 }
 
-func (file TermiterFile) Verify() error {
+func (file *TermiterFile) Verify() error {
 	for k := range file.Commands {
 		if _, e := file.Actions[k]; e {
 			return fmt.Errorf("Repeated key for command and action: %s", k)
