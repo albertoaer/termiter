@@ -13,6 +13,7 @@ func main() {
 		file, err := os.Open(path)
 		termiter.PanicIfError(err)
 		tmtf, err := termiter.ReadTermiterFile(file)
+		termiter.PanicIfError(tmtf.Verify())
 		termiter.PanicIfError(err)
 		fmt.Printf("%v\n", tmtf)
 		termiter.PanicIfError(file.Close())

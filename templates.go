@@ -23,8 +23,8 @@ type Action struct {
 
 type Command struct {
 	Expect []string `toml:"expect"`
-	Exec   []string `toml:"exec"`
 	Use    string   `toml:"use"`
+	Target string   `toml:"target"`
 }
 
 type TermiterFile struct {
@@ -39,10 +39,32 @@ func ReadTermiterFile(source io.Reader) (file TermiterFile, err error) {
 	return
 }
 
-func Verify(file TermiterFile) error {
+func (file TermiterFile) Verify() error {
 	for k := range file.Commands {
 		if _, e := file.Actions[k]; e {
 			return fmt.Errorf("Repeated key for command and action: %s", k)
+		}
+	}
+	for name, profile := range file.Profiles {
+		if _, e := file.Profiles[profile.Extends]; !e && len(profile.Extends) > 0 {
+			return fmt.Errorf("Profile %s extending invalid profile: %s", name, profile.Extends)
+		}
+	}
+	for name, action := range file.Actions {
+		for _, expect := range action.Expect {
+			if _, e := file.Actions[expect]; !e {
+				return fmt.Errorf("Action %s expecting invalid action: %s", name, expect)
+			}
+		}
+	}
+	for name, command := range file.Commands {
+		for _, expect := range command.Expect {
+			if _, e := file.Actions[expect]; !e {
+				return fmt.Errorf("Command %s expecting invalid action: %s", name, expect)
+			}
+		}
+		if _, e := file.Profiles[command.Use]; !e && len(command.Use) > 0 {
+			return fmt.Errorf("Command %s using invalid profile: %s", name, command.Use)
 		}
 	}
 	return nil
