@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/albertoaer/termiter"
@@ -15,7 +14,6 @@ func main() {
 		tmtf, err := termiter.ReadTermiterFile(file)
 		termiter.PanicIfError(tmtf.Verify())
 		termiter.PanicIfError(err)
-		fmt.Printf("%v\n", tmtf)
 		termiter.PanicIfError(file.Close())
 	}
 }
