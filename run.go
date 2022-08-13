@@ -5,11 +5,12 @@ import "fmt"
 const MaxActionExecution = 50
 
 type ExecutionContext struct {
+	file           *TermiterFile
 	visitedActions map[string]int
 }
 
-func NewExecutionContext() *ExecutionContext {
-	return &ExecutionContext{make(map[string]int)}
+func NewExecutionContext(file *TermiterFile) *ExecutionContext {
+	return &ExecutionContext{file, make(map[string]int)}
 }
 
 type Runnable interface {
@@ -51,12 +52,29 @@ func (file *TermiterFile) GetRunnable(args []string) (Runnable, error) {
 	}
 }
 
+func RunExpected(context *ExecutionContext, expectedList []string) int {
+	for _, item := range expectedList {
+		ac := context.file.Actions[item]
+		if num, e := context.visitedActions[item]; !e || (num < MaxActionExecution && !ac.Once) {
+			context.visitedActions[item]++
+			//TODO: Log status errors and omit optionals
+			if status := ac.Run(context, []string{}); status != 0 {
+				return status
+			}
+		}
+	}
+	return 0
+}
+
 func (action *Action) Run(context *ExecutionContext, _ []string) int {
-	//TODO: Implement
-	return -1
+	RunExpected(context, action.Expect)
+	if len(action.Exec) > 0 {
+		return RunCommand(action.Exec[0], action.Exec[1:])
+	}
+	return 0
 }
 
 func (command *Command) Run(context *ExecutionContext, args []string) int {
-	//TODO: Implement
+	RunExpected(context, command.Expect)
 	return -1
 }
