@@ -3,6 +3,9 @@ package termiter
 import (
 	"log"
 	"os/exec"
+
+	"github.com/fatih/color"
+	"github.com/mattn/go-colorable"
 )
 
 type OutProxy struct {
@@ -12,16 +15,20 @@ type OutProxy struct {
 
 func (o *OutProxy) Write(p []byte) (n int, err error) {
 	prev := "[INFO]"
+	paint := color.New(color.BgBlue, color.FgWhite)
 	if o.outErr {
 		prev = "[ERR]"
+		paint = color.New(color.BgRed, color.FgWhite)
 	}
-	o.logger.Printf("%s %s", prev, string(p))
+	output := paint.Sprintf("%s %s", prev, string(p))
+	o.logger.Printf(output)
 	return len(p), nil
 }
 
 func RunCommand(name string, args []string) int {
 	cmd := exec.Command(name, args...)
 	log := log.Default()
+	log.SetOutput(colorable.NewColorableStdout())
 	cmd.Stdout = &OutProxy{logger: log, outErr: false}
 	cmd.Stderr = &OutProxy{logger: log, outErr: true}
 	cmd.Stdin = nil
