@@ -7,24 +7,27 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+//A profile is a bridge between the user input and a program execution
 type Profile struct {
-	Extends string            `toml:"extend"`
-	Accepts []string          `toml:"accept"`
-	Set     map[string]string `toml:"set"`
-	Nargs   int               `toml:"nargs"`
+	Extends string            `toml:"extend"` //The profile from which its inherits its behave
+	Accepts []string          `toml:"accept"` //Flags accepted by the profile
+	Set     map[string]string `toml:"set"`    //Setted flags by the profile
+	Nargs   int               `toml:"nargs"`  //Number of arguments it accepts
 }
 
+//An action is an execution that always do the same
 type Action struct {
-	Expect   []string `toml:"expect"`
-	Exec     []string `toml:"exec"`
-	Once     bool     `toml:"once"`
-	Optional bool     `toml:"optional"`
+	Expect   []string `toml:"expect"`   //Actions expected to be donde before
+	Exec     []string `toml:"exec"`     //Command to be executed
+	Once     bool     `toml:"once"`     //If its true and the action has been executed won't run again
+	Optional bool     `toml:"optional"` //If its fails the action expecting it will run without problems
 }
 
+//A command is a action with custom input provided by the user and mapped by the profile
 type Command struct {
-	Expect []string `toml:"expect"`
-	Use    string   `toml:"use"`
-	Target string   `toml:"target"`
+	Expect []string `toml:"expect"` //Actions expected to be done before
+	Use    string   `toml:"use"`    //Profile to be applied
+	Target string   `toml:"target"` //Target program to be run
 }
 
 type TermiterFile struct {
