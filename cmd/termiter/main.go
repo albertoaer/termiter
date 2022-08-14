@@ -12,8 +12,12 @@ func main() {
 		file, err := os.Open(path)
 		termiter.PanicIfError(err)
 		tmtf, err := termiter.ReadTermiterFile(file)
-		termiter.PanicIfError(tmtf.Verify())
 		termiter.PanicIfError(err)
+		termiter.PanicIfError(tmtf.Verify())
 		termiter.PanicIfError(file.Close())
+		runnable, err := tmtf.GetRunnable(os.Args[2:])
+		termiter.PanicIfError(err)
+		context := termiter.NewExecutionContext(tmtf)
+		runnable.Run(context, os.Args[2:])
 	}
 }
