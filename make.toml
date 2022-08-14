@@ -1,0 +1,5 @@
+#!dist/termiter
+# ^ build Termiter using Termiter itself!
+
+[act.def]
+exec = ["go", "build", "-o", "./dist", "./cmd/termiter"]
