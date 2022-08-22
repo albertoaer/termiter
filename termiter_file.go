@@ -7,12 +7,17 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-//A profile is a bridge between the user input and a program execution
-type Profile struct {
-	Extends string            `toml:"extend"` //The profile from which its inherits its behave
-	Accepts []string          `toml:"accept"` //Flags accepted by the profile
-	Set     map[string]string `toml:"set"`    //Setted flags by the profile
-	Nargs   int               `toml:"nargs"`  //Number of arguments it accepts
+type Flag struct {
+	Name string `toml:"name"` //Expected CLI flag name
+}
+
+type Environment struct {
+	Fork    bool              `toml:"fork"`    //Does clone from the process environment
+	Include map[string]string `toml:"include"` //The key=value to be included
+}
+
+type Variable struct {
+	Value string `toml:"value"` //Value of the variable
 }
 
 //An action is an execution that always do the same
@@ -21,19 +26,14 @@ type Action struct {
 	Exec     []string `toml:"exec"`     //Command to be executed
 	Once     bool     `toml:"once"`     //If its true and the action has been executed won't run again
 	Optional bool     `toml:"optional"` //If its fails the action expecting it will run without problems
-}
-
-//A command is a action with custom input provided by the user and mapped by the profile
-type Command struct {
-	Expect []string `toml:"expect"` //Actions expected to be done before
-	Use    string   `toml:"use"`    //Profile to be applied
-	Target string   `toml:"target"` //Target program to be run
+	Env      string   `toml:"env"`      //Environment to use in the process invokation
 }
 
 type TermiterFile struct {
-	Commands map[string]*Command `toml:"cmd"`
-	Actions  map[string]*Action  `toml:"act"`
-	Profiles map[string]*Profile `toml:"prf"`
+	Flags        map[string]*Flag        `toml:"flg"`
+	Environments map[string]*Environment `toml:"env"`
+	Variables    map[string]*Variable    `toml:"var"`
+	Actions      map[string]*Action      `toml:"act"`
 }
 
 func ReadTermiterFile(source io.Reader) (file *TermiterFile, err error) {
@@ -48,31 +48,14 @@ func ReadTermiterFile(source io.Reader) (file *TermiterFile, err error) {
 }
 
 func (file *TermiterFile) Verify() error {
-	for k := range file.Commands {
-		if _, e := file.Actions[k]; e {
-			return fmt.Errorf("Repeated key for command and action: %s", k)
-		}
-	}
-	for name, profile := range file.Profiles {
-		if _, e := file.Profiles[profile.Extends]; !e && len(profile.Extends) > 0 {
-			return fmt.Errorf("Profile %s extending invalid profile: %s", name, profile.Extends)
-		}
-	}
 	for name, action := range file.Actions {
 		for _, expect := range action.Expect {
 			if _, e := file.Actions[expect]; !e {
 				return fmt.Errorf("Action %s expecting invalid action: %s", name, expect)
 			}
 		}
-	}
-	for name, command := range file.Commands {
-		for _, expect := range command.Expect {
-			if _, e := file.Actions[expect]; !e {
-				return fmt.Errorf("Command %s expecting invalid action: %s", name, expect)
-			}
-		}
-		if _, e := file.Profiles[command.Use]; !e && len(command.Use) > 0 {
-			return fmt.Errorf("Command %s using invalid profile: %s", name, command.Use)
+		if _, e := file.Environments[action.Env]; !e && len(action.Env) > 0 {
+			return fmt.Errorf("Action %s using invalid environment: %s", name, action.Env)
 		}
 	}
 	return nil
