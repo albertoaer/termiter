@@ -1,16 +1,24 @@
 package termiter
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 const MaxActionExecution = 50
 
 type ExecutionContext struct {
 	file           *TermiterFile
 	visitedActions map[string]int
+	variables      map[string]string
 }
 
 func NewExecutionContext(file *TermiterFile, args []string) *ExecutionContext {
-	return &ExecutionContext{file, make(map[string]int)}
+	vars := make(map[string]string)
+	for k, v := range file.Variables {
+		vars[k] = v.Value
+	}
+	return &ExecutionContext{file, make(map[string]int), vars}
 }
 
 type Runnable interface {
@@ -42,10 +50,27 @@ func RunExpected(context *ExecutionContext, expectedList []string) int {
 	return 0
 }
 
+func makeEnv(name string, context *ExecutionContext) []string {
+	if env, e := context.file.Environments[name]; e {
+		result := make([]string, 0)
+		if env.Fork {
+			result = append(result, os.Environ()...)
+		}
+		for k, v := range env.Include {
+			result = append(result, k+"="+v)
+		}
+		return result
+	}
+	return os.Environ()
+}
+
 func (action *Action) Run(context *ExecutionContext) int {
 	RunExpected(context, action.Expect)
 	if len(action.Exec) > 0 {
-		return RunCommand(action.Exec[0], action.Exec[1:])
+		env := makeEnv(action.Env, context)
+		cmd, err := parseCommand(action.Exec, context)
+		PanicIfError(err)
+		return RunCommand(cmd[0], cmd[1:], env)
 	}
 	return 0
 }

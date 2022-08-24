@@ -25,8 +25,9 @@ func (o *OutProxy) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func RunCommand(name string, args []string) int {
+func RunCommand(name string, args []string, env []string) int {
 	cmd := exec.Command(name, args...)
+	cmd.Env = env
 	log := log.Default()
 	log.SetOutput(colorable.NewColorableStdout())
 	cmd.Stdout = &OutProxy{logger: log, outErr: false}
