@@ -3,6 +3,7 @@ package termiter
 import (
 	"log"
 	"os/exec"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
@@ -20,8 +21,8 @@ func (o *OutProxy) Write(p []byte) (n int, err error) {
 		prev = "[ERR]"
 		paint = color.New(color.BgRed, color.FgWhite)
 	}
-	output := paint.Sprintf("%s %s", prev, string(p))
-	o.logger.Printf(output)
+	output := paint.Sprintf("%s %s", prev, strings.Trim(string(p), "\n\r "))
+	o.logger.Println(output)
 	return len(p), nil
 }
 
