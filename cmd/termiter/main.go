@@ -15,9 +15,10 @@ func main() {
 		termiter.PanicIfError(err)
 		termiter.PanicIfError(tmtf.Verify())
 		termiter.PanicIfError(file.Close())
-		runnable, err := tmtf.GetRunnable(os.Args[2:])
+		runnable, unusedArgs, err := tmtf.GetRunnable(os.Args[2:])
 		termiter.PanicIfError(err)
-		context := termiter.NewExecutionContext(tmtf, os.Args[2:])
+		context, err := termiter.NewExecutionContext(tmtf, unusedArgs)
+		termiter.PanicIfError(err)
 		runnable.Run(context)
 	}
 }

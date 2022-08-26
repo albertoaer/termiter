@@ -8,7 +8,10 @@ import (
 )
 
 type Flag struct {
-	Name string `toml:"name"` //Expected CLI flag name
+	Name     string `toml:"name"`     //Expected CLI flag name
+	Default  string `toml:"default"`  //Default value if flag is not provided
+	Required bool   `toml:"required"` //Is the flag required to be provided?
+	Info     string `toml:"info"`     //The flag description
 }
 
 type Environment struct {

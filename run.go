@@ -13,27 +13,32 @@ type ExecutionContext struct {
 	variables      map[string]string
 }
 
-func NewExecutionContext(file *TermiterFile, args []string) *ExecutionContext {
-	vars := make(map[string]string)
+func NewExecutionContext(file *TermiterFile, args []string) (*ExecutionContext, error) {
+	vars, e := getFlagValues(file.Flags, args)
+	if e != nil {
+		return nil, e
+	}
 	for k, v := range file.Variables {
 		vars[k] = v.Value
 	}
-	return &ExecutionContext{file, make(map[string]int), vars}
+	return &ExecutionContext{file, make(map[string]int), vars}, nil
 }
 
 type Runnable interface {
 	Run(context *ExecutionContext) int
 }
 
-func (file *TermiterFile) GetRunnable(args []string) (Runnable, error) {
+func (file *TermiterFile) GetRunnable(args []string) (Runnable, []string, error) {
 	name := "def"
+	unusedArgs := args
 	if len(args) > 0 {
 		name = args[0]
+		unusedArgs = args[1:]
 	}
 	if act, e := file.Actions[name]; e {
-		return act, nil
+		return act, unusedArgs, nil
 	}
-	return nil, fmt.Errorf("Action %s not found", name)
+	return nil, unusedArgs, fmt.Errorf("Action %s not found", name)
 }
 
 func RunExpected(context *ExecutionContext, expectedList []string) int {
