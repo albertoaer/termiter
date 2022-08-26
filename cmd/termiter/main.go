@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 
 	"github.com/albertoaer/termiter"
@@ -20,5 +21,7 @@ func main() {
 		context, err := termiter.NewExecutionContext(tmtf, unusedArgs)
 		termiter.PanicIfError(err)
 		runnable.Run(context)
+	} else {
+		termiter.PanicIfError(errors.New("Please provide a Termiter file"))
 	}
 }
