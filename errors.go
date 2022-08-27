@@ -6,10 +6,12 @@ import (
 	"os/exec"
 )
 
-func PanicIfError(err error) {
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "[EXIT] due to: %s", err.Error())
-		os.Exit(-1)
+func PanicIfError(errs ...error) {
+	for _, err := range errs {
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "[EXIT] due to: %s", err.Error())
+			os.Exit(-1)
+		}
 	}
 }
 

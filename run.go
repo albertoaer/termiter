@@ -55,26 +55,33 @@ func RunExpected(context *ExecutionContext, expectedList []string) int {
 	return 0
 }
 
-func makeEnv(name string, context *ExecutionContext) []string {
+func makeEnv(name string, context *ExecutionContext) ([]string, error) {
 	if env, e := context.file.Environments[name]; e {
 		result := make([]string, 0)
 		if env.Fork {
 			result = append(result, os.Environ()...)
 		}
 		for k, v := range env.Include {
+			var err error
+			if k, err = replaceVariable(context, k); err != nil {
+				return nil, err
+			}
+			if v, err = replaceVariable(context, v); err != nil {
+				return nil, err
+			}
 			result = append(result, k+"="+v)
 		}
-		return result
+		return result, nil
 	}
-	return os.Environ()
+	return os.Environ(), nil
 }
 
 func (action *Action) Run(context *ExecutionContext) int {
 	RunExpected(context, action.Expect)
 	if len(action.Exec) > 0 {
-		env := makeEnv(action.Env, context)
-		cmd, err := parseCommand(action.Exec, context)
-		PanicIfError(err)
+		env, err1 := makeEnv(action.Env, context)
+		cmd, err2 := parseCommand(action.Exec, context)
+		PanicIfError(err1, err2)
 		return RunCommand(cmd[0], cmd[1:], env)
 	}
 	return 0
