@@ -1,5 +1,16 @@
 #!dist/termiter
 # ^ build Termiter using Termiter itself!
 
+[flg.arch]
+name = "arch"
+
+[flg.os]
+name = "os"
+
+[env.builder]
+fork = true
+include = { GOARCH = "{arch}", GOOS = "{os}" }
+
 [act.def]
+env = "builder"
 exec = ["$go build -o ./dist ./cmd/termiter"]
