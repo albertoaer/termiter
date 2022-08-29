@@ -2,7 +2,6 @@ package termiter
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 )
 
@@ -22,9 +21,9 @@ func replaceVariable(context *ExecutionContext, line string) (string, error) {
 				return "", errors.New("Fount open bracket when expecting closing bracket")
 			}
 			name := remain[i+1 : i+1+j]
-			v, e := context.variables[name]
-			if !e {
-				return "", fmt.Errorf("Variable not found: '%s'", name)
+			v, e := context.GetVariable(name)
+			if e != nil {
+				return "", e
 			}
 			result += remain[:i] + v + remain[i+j+2:]
 			remain = remain[i+j+2:]

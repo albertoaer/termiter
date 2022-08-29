@@ -30,6 +30,7 @@ type Action struct {
 	Once     bool     `toml:"once"`     //If its true and the action has been executed won't run again
 	Optional bool     `toml:"optional"` //If its fails the action expecting it will run without problems
 	Env      string   `toml:"env"`      //Environment to use in the process invokation
+	Info     string   `toml:"info"`     //The flag description
 }
 
 type TermiterFile struct {

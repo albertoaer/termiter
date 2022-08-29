@@ -16,11 +16,12 @@ func main() {
 		termiter.PanicIfError(err)
 		termiter.PanicIfError(tmtf.Verify())
 		termiter.PanicIfError(file.Close())
-		runnable, unusedArgs, err := tmtf.GetRunnable(os.Args[2:])
 		termiter.PanicIfError(err)
-		context, err := termiter.NewExecutionContext(tmtf, unusedArgs)
+		context, err := termiter.NewExecutionContext(tmtf, os.Args[2:])
 		termiter.PanicIfError(err)
-		runnable.Run(context)
+		action, err := context.GetStartAction()
+		termiter.PanicIfError(err)
+		action.Run(context)
 	} else {
 		termiter.PanicIfError(errors.New("Please provide a Termiter file"))
 	}
